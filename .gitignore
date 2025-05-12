@@ -1,0 +1,4 @@
+.env
+admin_credentials.txt
+docker-compose.yml
+.history
