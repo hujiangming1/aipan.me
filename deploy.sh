@@ -316,8 +316,8 @@ configure_postgres() {
   fi
   
   # 构建数据库连接字符串
-  DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=${DATABASE_SCHEMA}"
-  SHADOW_DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}_shadow?schema=${DATABASE_SCHEMA}"
+  DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5434/${POSTGRES_DB}?schema=${DATABASE_SCHEMA}"
+  SHADOW_DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5434/${POSTGRES_DB}_shadow?schema=${DATABASE_SCHEMA}"
   
   # 确保数据库用户名在连接字符串中正确使用
   info "注意: 数据库用户名将被设置为 '$POSTGRES_USER'"
@@ -506,8 +506,8 @@ services:
     container_name: aipan-prisma-migrate
     restart: "no"
     environment:
-      - DATABASE_URL=postgresql://\${POSTGRES_USER}:\${POSTGRES_PASSWORD}@postgres:5432/\${POSTGRES_DB}?schema=\${DATABASE_SCHEMA}
-      - SHADOW_DATABASE_URL=postgresql://\${POSTGRES_USER}:\${POSTGRES_PASSWORD}@postgres:5432/\${POSTGRES_DB}_shadow?schema=\${DATABASE_SCHEMA}
+      - DATABASE_URL=postgresql://\${POSTGRES_USER}:\${POSTGRES_PASSWORD}@postgres:5434/\${POSTGRES_DB}?schema=\${DATABASE_SCHEMA}
+      - SHADOW_DATABASE_URL=postgresql://\${POSTGRES_USER}:\${POSTGRES_PASSWORD}@postgres:5434/\${POSTGRES_DB}_shadow?schema=\${DATABASE_SCHEMA}
       # 确保 Prisma 使用正确的数据库用户名
       - POSTGRES_USER=\${POSTGRES_USER}
       - POSTGRES_PASSWORD=\${POSTGRES_PASSWORD}
@@ -528,11 +528,11 @@ services:
       - "\${WS_PORT}:3002"  # WebSocket端口
     environment:
       # 数据库配置
-      - DATABASE_URL=postgresql://\${POSTGRES_USER}:\${POSTGRES_PASSWORD}@postgres:5432/\${POSTGRES_DB}?schema=\${DATABASE_SCHEMA}
-      - NUXT_DATABASE_URL=postgresql://\${POSTGRES_USER}:\${POSTGRES_PASSWORD}@postgres:5432/\${POSTGRES_DB}?schema=\${DATABASE_SCHEMA}
+      - DATABASE_URL=postgresql://\${POSTGRES_USER}:\${POSTGRES_PASSWORD}@postgres:5434/\${POSTGRES_DB}?schema=\${DATABASE_SCHEMA}
+      - NUXT_DATABASE_URL=postgresql://\${POSTGRES_USER}:\${POSTGRES_PASSWORD}@postgres:5434/\${POSTGRES_DB}?schema=\${DATABASE_SCHEMA}
       - DATABASE_SCHEMA=\${DATABASE_SCHEMA}
       - NUXT_DATABASE_SCHEMA=\${DATABASE_SCHEMA}
-      - SHADOW_DATABASE_URL=postgresql://\${POSTGRES_USER}:\${POSTGRES_PASSWORD}@postgres:5432/\${POSTGRES_DB}_shadow?schema=\${DATABASE_SCHEMA}
+      - SHADOW_DATABASE_URL=postgresql://\${POSTGRES_USER}:\${POSTGRES_PASSWORD}@postgres:5434/\${POSTGRES_DB}_shadow?schema=\${DATABASE_SCHEMA}
       # 数据库连接信息
       - POSTGRES_USER=\${POSTGRES_USER}
       - POSTGRES_PASSWORD=\${POSTGRES_PASSWORD}
@@ -586,7 +586,7 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5434:5434"
     networks:
       - aipan-network
 
@@ -1060,7 +1060,7 @@ regenerate_prisma_client() {
   info "正在生成 Prisma 客户端..."
   docker run --rm \
     --name aipan-prisma-generate \
-    -e DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=${DATABASE_SCHEMA}" \
+    -e DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5434/${POSTGRES_DB}?schema=${DATABASE_SCHEMA}" \
     unilei/aipan-netdisk-search:latest \
     /bin/sh -c "cd /app && if [ ! -f ./prisma-esm-fix.mjs ]; then echo 'Creating prisma-esm-fix.mjs file...' && echo \"import { fileURLToPath } from 'url'; import { dirname } from 'path'; import { createRequire } from 'module'; if (typeof global.__filename === 'undefined') { global.__filename = fileURLToPath(import.meta.url); } if (typeof global.__dirname === 'undefined') { global.__dirname = dirname(global.__filename); } if (typeof global.require === 'undefined') { global.require = createRequire(import.meta.url); } console.log('[Prisma ESM Fix] 已加载 ES Module 环境修复');\" > ./prisma-esm-fix.mjs; fi && node --import=./prisma-esm-fix.mjs -e \"console.log('Generating Prisma client with ESM fix')\""
   
@@ -1133,8 +1133,8 @@ run_database_migration() {
   docker run --rm \
     --name aipan-prisma-migrate \
     --network aipan-network \
-    -e DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=${DATABASE_SCHEMA}" \
-    -e SHADOW_DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}_shadow?schema=${DATABASE_SCHEMA}" \
+    -e DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5434/${POSTGRES_DB}?schema=${DATABASE_SCHEMA}" \
+    -e SHADOW_DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5434/${POSTGRES_DB}_shadow?schema=${DATABASE_SCHEMA}" \
     unilei/aipan-netdisk-search:latest \
     /bin/sh -c "cd /app && if [ ! -f ./prisma-esm-fix.mjs ]; then echo 'Creating prisma-esm-fix.mjs file...' && echo \"import { fileURLToPath } from 'url'; import { dirname } from 'path'; import { createRequire } from 'module'; if (typeof global.__filename === 'undefined') { global.__filename = fileURLToPath(import.meta.url); } if (typeof global.__dirname === 'undefined') { global.__dirname = dirname(global.__filename); } if (typeof global.require === 'undefined') { global.require = createRequire(import.meta.url); } console.log('[Prisma ESM Fix] 已加载 ES Module 环境修复');\" > ./prisma-esm-fix.mjs; fi && node --import=./prisma-esm-fix.mjs -e \"console.log('Running Prisma migrations with ESM fix')\" npx prisma migrate deploy && npx prisma db seed"
   
